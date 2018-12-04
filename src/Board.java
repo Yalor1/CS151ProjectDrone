@@ -42,7 +42,8 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 	    };
 	
 	private final  int[][] cloudPos = {
-			{10, 10}, {300,500}, {700, 100}, {900, 600}
+			{10, 10}, {300,500}, {700, 100}, {900, 600},
+			{1150, 10}, {1350, 500}, {1550, 100}, {1750, 600},
 			
 			};
 		
@@ -147,6 +148,25 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 		
 		if(drone.isVisible()) {
 			drone.move();
+		}
+	}
+	
+	private void updateClouds() {
+
+		if(clouds.isEmpty()) {
+			ingame = false; 
+			return;
+		}
+
+		for(int i = 0; i < clouds.size(); i++) {
+
+			Cloud p = clouds.get(i);
+
+			if(p.isVisible()) {
+				p.move();
+			} else {
+				clouds.remove(i);
+			}
 		}
 	}
 	
