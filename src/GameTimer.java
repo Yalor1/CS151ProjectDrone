@@ -1,5 +1,3 @@
-package testDrone;
-
 
 import javax.swing.*;
 
