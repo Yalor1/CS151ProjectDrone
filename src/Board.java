@@ -29,6 +29,7 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 	private Timer timer;
 	
 	private boolean ingame = true;
+	private boolean paused = false;
     
 	private final int[][] planePos = {
 	        {1238, 390}, {1500, 890}, {1380, 89},
@@ -133,7 +134,10 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 		inGame();
 		updatePlayer();
 		updateAirplanes();
-		checkCollisions();
+		if(!paused){
+			checkCollisions();
+		}
+		System.out.println(drone.getLives());
 		repaint();
 	}
 	
@@ -193,20 +197,53 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 	public void checkCollisions() {
 		
 		Rectangle r3 = drone.getBounds();
-		
+
 		for(Airplane airplane : airplanes) {
 			Rectangle r2 = airplane.getBounds();
 			
 			if(r3.intersects(r2)) {
-				drone.setVisible(false);
-				airplane.setVisible(false);
-				ingame = false;
 				
+				System.out.println(paused);
+				if(!paused){
+					drone.loseLife();
+					paused = true;
+					new java.util.Timer().schedule( 
+						new java.util.TimerTask() {
+							@Override
+							public void run() {
+								paused = false;
+							}
+						}, 
+						3000 
+					);
+				}
+				if(drone.getLives() == 0){
+					ingame = false;
+
+					drone.setVisible(false);
+					airplane.setVisible(false);
+				}				
 			}
 		}
-		
 	}
 	
+	public void pauseTimer(int lives){
+		ActionListener action = new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				System.out.println(lives);
+				if(lives == 0){
+					timer.stop();
+					ingame = false;
+				}
+				paused = false;
+			}
+		};
+		timer = new Timer(5000, action);
+		timer.setInitialDelay(0);
+		timer.start();
+
+	}	
+
 	private class TAdapter extends KeyAdapter {
 		
 		@Override

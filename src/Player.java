@@ -8,6 +8,7 @@ public class Player extends Sprite implements ConfigurationSpace {
 	private int randomNumX = 1;
 	private int xTemp;
 	private int yTemp;
+	private int lives;
 	private boolean check = true;
 	private boolean pX = true;
 	private boolean pY = true;
@@ -16,12 +17,12 @@ public class Player extends Sprite implements ConfigurationSpace {
 
 	public Player(int x, int y) {
 		super(x,y);
-
+		lives = 3;
 		initPlayer();
 	}
 
 	private void initPlayer() {
-		loadImage("src/images/drone.png");
+		loadImage("images/drone.png");
 		getImageDimensions();
 	}
 
@@ -179,5 +180,13 @@ public class Player extends Sprite implements ConfigurationSpace {
 			return check;
 		}
 
+	}
+
+	public void loseLife(){
+		lives--;
+	}
+
+	public int getLives(){
+		return lives;
 	}
 }

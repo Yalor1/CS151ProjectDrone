@@ -14,7 +14,7 @@ public class Airplane extends Sprite {
 
 	// class to load airplane image
 	private void initAirplane() {
-		loadImage("src/images/plane.png");
+		loadImage("images/plane.png");
 		getImageDimensions();
 	}
 	

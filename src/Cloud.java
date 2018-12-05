@@ -12,7 +12,7 @@ public class Cloud extends Sprite {
 		initCloud();
 	}
 	private void initCloud() {
-		loadImage("src/images/cloud.png");
+		loadImage("C:/Users/aldrich_mangune/Personal/CS151ProjectDrone/src/images/cloud.png");
 		getImageDimensions();
 	}
 	
