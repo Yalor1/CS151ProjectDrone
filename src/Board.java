@@ -23,12 +23,17 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 	private Dimension d;
 	private ArrayList<Airplane> airplanes;
 	private ArrayList<Cloud> clouds;
+	private ArrayList<Lives> lives;
 	private Player drone;
 	private Airplane airplane;
 	private Cloud cloud;
+	private Lives live;
 	private Timer timer;
+	private String message = "Game Over";
+	private int crashes = 0;
 	
 	private boolean ingame = true;
+	private boolean pause = false;
     
 	private final int[][] planePos = {
 	        {1238, 390}, {1500, 890}, {1380, 89},
@@ -41,10 +46,15 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 	     
 	    };
 	
-	private final  int[][] cloudPos = {
-			{10, 10}, {300,500}, {700, 100}, {900, 600}
+	private final int[][] cloudPos = {
+			{10, 10}, {300,500}, {700, 100}, {900, 600},
+			{1150, 10}, {1350, 500}, {1550, 100}, {1750, 600},
 			
 			};
+	
+	private final int[][] livesPos = {
+			 {100,90},{50,1},{0,0}
+	};
 		
 	public Board() {
 		initBoard();
@@ -54,12 +64,14 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 		
 		addKeyListener(new TAdapter());
 		setFocusable(true);
-		setBackground(Color.CYAN);
+		setBackground(Color.WHITE);
 		ingame = true;
 		setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_HEIGHT));
 		drone = new Player(DRONE_WIDTH, DRONE_HEIGHT);
+
 		initClouds();
 		initAirplanes();
+		initLives();
 		
 		timer = new Timer(DELAY, this);
 		timer.start();
@@ -81,6 +93,14 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 		}
 	}
 	
+	public void initLives() {
+		lives = new ArrayList<>();
+		
+		for(int[] l : livesPos) {
+			lives.add((new Lives(l[0], l[1])));
+		}
+	}
+	
 	@Override	
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -88,9 +108,13 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 		
 		if (ingame) {
 			drawClouds(g);
-			drawAirplanes(g);
 			drawPlayer(g);
+			drawAirplanes(g);
+			drawLives(g);
 			
+		}
+		else {
+			drawGameOver(g);
 		}
 		
 		Toolkit.getDefaultToolkit().sync();
@@ -124,6 +148,15 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 		}
 	}
 	
+	private void drawLives(Graphics g) {
+		
+		for(Lives live: lives) {
+			if(live.isVisible()) {
+				g.drawImage(live.getImage(), live.getX(), live.getX(), this);
+			}
+		}
+	}
+	
 	
 	
 	@Override
@@ -132,14 +165,22 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 		inGame();
 		updatePlayer();
 		updateAirplanes();
-		checkCollisions();
+		updateClouds();
+		updateLives();
+		if(!pause) {
+			checkCollisions();
+		}
+		System.out.println(drone.getLives());
+		//checkCollisions();
 		repaint();
 	}
 	
 	private void inGame() {
 		
 		if(!ingame) {
+			
 			timer.stop();
+
 		}
 	}
 	
@@ -147,6 +188,42 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 		
 		if(drone.isVisible()) {
 			drone.move();
+		}
+	}
+	
+	private void updateClouds() {
+
+		if(clouds.isEmpty()) {
+			ingame = false; 
+			return;
+		}
+
+		for(int i = 0; i < clouds.size(); i++) {
+
+			Cloud p = clouds.get(i);
+
+			if(p.isVisible()) {
+				p.move();
+			} else {
+				clouds.remove(i);
+			}
+		}
+	}
+	
+	private void updateLives() {
+		if(lives.isEmpty()) {
+			ingame = false; 
+			return;
+		}
+
+		if(drone.isCrashing()) {
+			int i = 0;
+			lives.remove(i);
+			i++;
+			drone.setCrashing(false);
+			
+			
+			
 		}
 	}
 	
@@ -178,14 +255,53 @@ public class Board extends JPanel implements ActionListener, ConfigurationSpace 
 			Rectangle r2 = airplane.getBounds();
 			
 			if(r3.intersects(r2)) {
-				drone.setVisible(false);
-				airplane.setVisible(false);
-				ingame = false;
+				
+				System.out.println(pause);
+				
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if(!pause) {
+					drone.loseLife();
+					drone.setCrashing(true);
+					crashes++;
+					pause = true;
+					new java.util.Timer().schedule(
+							new java.util.TimerTask() {
+								@Override
+								public void run() {
+									pause = false;
+								}
+							},
+							3000
+							);
+				}
+				if(drone.getLives() == 0) {
+					ingame = false;
+					drone.setVisible(false);
+					airplane.setVisible(false);
+				}
 				
 			}
 		}
 		
 	}
+	
+	 private void drawGameOver(Graphics g) {
+
+	        String msg = "Game Over";
+	        Font large = new Font("Helvetica", Font.BOLD, 30);
+	        FontMetrics fm = getFontMetrics(large);
+
+	        g.setColor(Color.black);
+	        g.setFont(large);
+	        g.drawString(msg, (BOARD_WIDTH - fm.stringWidth(msg)) / 2,
+	                BOARD_HEIGHT / 2);
+	    }
+
 	
 	private class TAdapter extends KeyAdapter {
 		

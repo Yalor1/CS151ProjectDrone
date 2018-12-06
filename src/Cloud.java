@@ -13,7 +13,17 @@ public class Cloud extends Sprite {
 		loadImage("src/images/cloud.png");
 		getImageDimensions();
 	}
+	
+	public void move() {
+		if(x < -300) {
+			x = 2000; // once airplane touches the left border it will return to its initial position
+		}
+		
+		x -= 1;
+	}
 }
+
+
 
 
 
